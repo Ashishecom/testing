@@ -1,0 +1,44 @@
+name: Automated Tagging
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Get current date
+        id: date
+        run: |
+          echo "YEAR=$(date +'%Y')" >> $GITHUB_ENV
+          echo "MONTH=$(date +'%m')" >> $GITHUB_ENV
+          echo "DAY=$(date +'%d')" >> $GITHUB_ENV
+          
+      - name: Get latest tag count for the day
+        id: tag-count
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            PREFIX="v"
+          else
+            PREFIX="b"
+          fi
+          
+          # Get count of tags for current day
+          COUNT=$(git tag -l "${PREFIX}${YEAR}-${MONTH}-${DAY}.*" | wc -l)
+          NEXT_COUNT=$((COUNT + 1))
+          echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          
+      - name: Create new tag
+        run: |
+          NEW_TAG="${PREFIX}${YEAR}-${MONTH}-${DAY}.${TAG_COUNT}"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+          echo "Created and pushed tag: $NEW_TAG"
