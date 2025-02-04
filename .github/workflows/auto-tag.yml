@@ -1,4 +1,4 @@
-name: Automated Tagging
+name: Automated Taggi
 
 on:
   push:
