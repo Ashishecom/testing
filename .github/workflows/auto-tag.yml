@@ -25,7 +25,7 @@ jobs:
           echo "MONTH=$(date +'%m')" >> $GITHUB_ENV
           echo "DAY=$(date +'%d')" >> $GITHUB_ENV
           
-      - name: Get latest tag count for the day
+      - name: Calculate tag count
         id: tag-count
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
@@ -35,18 +35,10 @@ jobs:
           fi
           
           # Get count of tags for current day
-          COUNT=$(git tag -l "${PREFIX}${YEAR}-${MONTH}-${DAY}.*" | wc -l)
-          NEXT_COUNT=$((COUNT + 1))
-          echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
-          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
-          
-      - name: count existing tags
-        id: tag-count
-        run: |
           PATTERN="${PREFIX}${YEAR}-${MONTH}-${DAY}.*"
           COUNT=$(git tag -l "$PATTERN" | wc -l)
           NEXT_COUNT=$((COUNT + 1))
-          echo "TAG_COUNT=$((COUNT + 1))" >> $GITHUB_ENV
+          echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           
       - name: Create new tag
