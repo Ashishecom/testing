@@ -40,6 +40,15 @@ jobs:
           echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           
+      - name: count existing tags
+        id: tag-count
+        run: |
+          PATTERN="${PREFIX}${YEAR}-${MONTH}-${DAY}.*"
+          COUNT=$(git tag -l "$PATTERN" | wc -l)
+          NEXT_COUNT=$((COUNT + 1))
+          echo "TAG_COUNT=$((COUNT + 1))" >> $GITHUB_ENV
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          
       - name: Create new tag
         run: |
           # Configure Git
