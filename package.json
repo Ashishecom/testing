@@ -1,0 +1,31 @@
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "description": "This repository demonstrates automated Git tagging using GitHub Actions.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ashishecom/testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ashishecom/testing/issues"
+  },
+  "homepage": "https://github.com/Ashishecom/testing#readme",
+  "dependencies": {
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
