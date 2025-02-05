@@ -44,9 +44,6 @@ jobs:
       - name: Create new tag
         run: |
           # Configure Git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
           NEW_TAG="${PREFIX}${YEAR}-${MONTH}-${DAY}.${TAG_COUNT}"
           git tag $NEW_TAG
           git push origin $NEW_TAG
