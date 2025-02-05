@@ -25,7 +25,7 @@ jobs:
           echo "MONTH=$(date +'%m')" >> $GITHUB_ENV
           echo "DAY=$(date +'%d')" >> $GITHUB_ENV
           
-      - name: Calculate tag count
+      - name: Get latest tag count for the day
         id: tag-count
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
@@ -34,9 +34,11 @@ jobs:
             PREFIX="b"
           fi
           
+          # Fetch all tags first
+          git fetch --tags
+          
           # Get count of tags for current day
-          PATTERN="${PREFIX}${YEAR}-${MONTH}-${DAY}.*"
-          COUNT=$(git tag -l "$PATTERN" | wc -l)
+          COUNT=$(git tag -l "${PREFIX}${YEAR}-${MONTH}-${DAY}.*" | wc -l)
           NEXT_COUNT=$((COUNT + 1))
           echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
@@ -45,6 +47,12 @@ jobs:
         run: |
           # Configure Git
           NEW_TAG="${PREFIX}${YEAR}-${MONTH}-${DAY}.${TAG_COUNT}"
+          if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEW_TAG already exists, incrementing count"
+            TAG_COUNT=$((TAG_COUNT + 1))
+            NEW_TAG="${PREFIX}${YEAR}-${MONTH}-${DAY}.${TAG_COUNT}"
+          fi
+          
           git tag $NEW_TAG
           git push origin $NEW_TAG
           echo "Created and pushed tag: $NEW_TAG"
