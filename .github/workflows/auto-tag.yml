@@ -1,13 +1,10 @@
-name: Automated Taggi
+name: Automated Tagging
 
 on:
   push:
     branches:
       - main
       - dev
-
-permissions:
-  contents: write
 
 jobs:
   create-tag:
@@ -16,49 +13,32 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Determine Branch and Tag Format
-        id: branch_and_tag
+      - name: Get current date
+        id: date
         run: |
-          BRANCH=$(echo "${{ github.ref_name }}")
-          DATE=$(date +'%Y-%m-%d')
-          if [[ "$BRANCH" == "main" ]]; then
+          echo "YEAR=$(date +'%Y')" >> $GITHUB_ENV
+          echo "MONTH=$(date +'%m')" >> $GITHUB_ENV
+          echo "DAY=$(date +'%d')" >> $GITHUB_ENV
+          
+      - name: Get latest tag count for the day
+        id: tag-count
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             PREFIX="v"
-          elif [[ "$BRANCH" == "dev" ]]; then
+          else
             PREFIX="b"
-          else
-            echo "Unsupported branch: $BRANCH"
-            exit 1
           fi
-
-          # Fetch all tags
-          git fetch --tags
-
-          # Get today's existing tags and find the highest number
-          HIGHEST_TAG=$(git tag -l "${PREFIX}${DATE}.*" | sort -V | tail -n 1)
           
-          if [[ -z "$HIGHEST_TAG" ]]; then
-            VERSION_NUMBER=1
-          else
-            CURRENT_NUMBER=$(echo "$HIGHEST_TAG" | sed "s/.*\.//")
-            VERSION_NUMBER=$((CURRENT_NUMBER + 1))
-          fi
-
-          TAG="${PREFIX}${DATE}.${VERSION_NUMBER}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: Create and Push Tag
-        env:
-          TAG: ${{ steps.branch_and_tag.outputs.tag }}
+          # Get count of tags for current day
+          COUNT=$(git tag -l "${PREFIX}${YEAR}-${MONTH}-${DAY}.*" | wc -l)
+          NEXT_COUNT=$((COUNT + 1))
+          echo "TAG_COUNT=$NEXT_COUNT" >> $GITHUB_ENV
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          
+      - name: Create new tag
         run: |
-          echo "Creating tag: $TAG"
-          # Check if tag exists before creating
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping tag creation"
-            exit 0
-          fi
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag $TAG
-          git push origin $TAG
+          NEW_TAG="${PREFIX}${YEAR}-${MONTH}-${DAY}.${TAG_COUNT}"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+          echo "Created and pushed tag: $NEW_TAG"
